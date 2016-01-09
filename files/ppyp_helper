@@ -1,0 +1,249 @@
+#!/usr/bin/env bash
+#
+# Puppet Python Pip Helper 
+#
+read -r -d '' USAGE <<'EOF'
+usage: ppyp_helper pip [-v virtualenv] [-s] PIP-ARGS
+       ppyp_helper virtualenv [-s] VIRTUALENV-ARGS
+EOF
+
+read -r -d '' HELP <<'EOF'
+usage: ppyp_helper pip [-v virtualenv] [-s] PIP-ARGS
+       ppyp_helper virtualenv [-s] VIRTUALENV-ARGS
+
+ppyp_helper pip:
+  Execute pip from the environment [-v]. If the environment is created
+  using software collections (scl), enable the collection first.
+  The [-s] "source" option sets the parameter --no-use-wheel|--no-binary :all:
+  according to the used version of pip.
+  If the "pip" command is used with full path and the path resides within a
+  software collection, the scl is enabled.
+
+ppyp_helper virtualenv:
+  Create a new virtualenv. If the "virtualenv" command is used with full path 
+  and the path resides within a software collection, the scl is enabled.
+  The parameter [-s] enables the system-site-packages.
+
+
+Options for "pip" command:
+   -v virtualenv   The path to the virtualenv to use. 
+   -s              Install source packages. adapts the arguments to add
+                   "--no-use-wheel" or the new "--no-binary :all:" if 
+                   possible. RHEL6/CentOS stock pip 1.3.1 doesn't have
+                   whell support out of the box, so this option breaks
+                   it anyways.
+
+Options for "virtualenv" command:
+    -s             Enable system-site-packages
+
+Correctly uses SCLs (Software Collections) !!!
+
+Examples:
+  ppyp_helper pip install flask
+    Install flask for the default system python interpreter
+
+  ppyp_helper pip -v /myvenv -s flask
+    Install flask for the Environment /myvenv and don't use binaries.
+    SCLs are enabled if necessary
+
+  ppyp_helper /opt/rh/rh-python34/root/usr/bin/pip install flask
+    Install flask into the system-site-packages of the 
+    rh-python34 scl interpreter.
+
+  ppyp_helper virtualenv /myvenv
+    Create the virtualenv /myvenv from the default virtualenv-command
+
+  ppyp_helper /opt/rh/rh-python34/root/usr/bin/virtualenv  /myvenv
+    Create the virtualenv /myvenv for the rh-python34 scl interpreter
+
+EOF
+
+SCLS=""
+SCLS_PREFIXES=""
+SCL=""
+WHEEL_INSTALL_FLAG=''
+
+
+function exit1 {
+    echo
+    echo $*
+    echo
+    echo "$USAGE"
+    echo
+    exit 1
+}
+
+function print_help {
+    echo
+    echo "$HELP"
+    echo
+}
+
+function has_scl {
+    cmd_scl=$(which scl)
+    [[ -x $cmd_scl ]] || return 1                       # No scl command installed
+    (( $($cmd_scl -l |wc -l) >= 1 )) && return 0        # At least one scl installed
+    return 1
+}
+
+
+function scl_installed {
+    _scl=$1
+    if [[ -f /etc/scl/prefixes/$_scl ]] ; then
+        prefix=$(</etc/scl/prefixes/$_scl)
+        path=${prefix}/${_scl}
+        [[ -d $path ]] && return 0
+    fi
+    return 1
+}
+
+# Fill the variable $SCLS with to prefixes for all installed scls
+# The scl "rh-python34" under "/opt/rh" becomes /opt/rh/rh-pyhton34
+function set_scl_prefixes {
+    SCLS_PREFIXES=""
+    for scl in $(scl -l) 
+    do
+        [[ -f /etc/scl/prefixes/${scl} ]] || continue
+        prefix=$(</etc/scl/prefixes/${scl})
+        path=${prefix}/${scl}
+        SCLS_PREFIXES="${SCLS_PREFIXES} ${path}"
+    done
+}
+
+function is_scl_command {
+    command=$1
+    for scl in $SCLS_PREFIXES
+    do
+        echo $command | grep -q -E "^$scl" && return 0
+    done
+    return 1
+}
+
+function set_scl_for_command {
+    command=$1
+    for scl in $(scl -l)
+    do
+        if echo $command | grep -q "/$scl/" ; then
+            SCL=$(echo $command | sed -r "s#^.*/($scl)/.*#\1#")
+            return 0
+        fi
+    done
+    return 1
+}
+
+function is_scl_virtualenv {
+    virtualenv=$1
+    prefix=$(<$virtualenv/lib/python*/orig-prefix.txt)
+    for scl_prefix in $SCLS_PREFIXES
+    do
+        echo $prefix | grep -q -E "^$scl_prefix" && return 0
+    done
+    return 1
+}
+
+function set_scl_for_virtualenv {
+    virtualenv=$1
+    prefix=$(<$virtualenv/lib/python*/orig-prefix.txt)
+    for scl in $SCLS
+    do
+        if echo $prefix | grep -q -E "/$scl/" 
+        then
+            SCL=$(echo $prefix | sed -r "s#^.*/($scl)/.*#\1#")
+            return 0
+        fi
+    done
+    return 1
+}
+
+function is_abs_command {
+    command=$1
+    [[ ${command:0:1} == "/" ]] && return 0
+    return 1
+}
+
+##################################################
+# main * main * main * main * main * main * main #
+##################################################
+
+[[ $# == 0 ]] && print_help && exit 1
+
+
+COMMAND=$1
+shift
+echo $COMMAND | grep -q -E ".*pip$" && CMD='pip'
+echo $COMMAND | grep -q -E ".*virtualenv$" && CMD='virtualenv'
+echo $CMD | grep -q -E "pip|virtualenv" || exit1 "Command must be 'pip' or 'virtualenv'"
+
+VIRTUALENV=''
+OPT_S=''
+while getopts "hv:s" options
+do
+    case $options in
+        h)
+            print_help
+            exit 1
+            ;;
+        v)
+            VIRTUALENV=$OPTARG
+            [[ -d $VIRTUALENV ]] || exit1 "Virtualenv $VIRTUALENV needs to point to a directory"
+            [[ -x $VIRTUALENV/bin/python ]] || exit1 "Virtualenv $VIRTUALENV does not have a python interpreter"
+            ;;
+        s)
+            OPT_S='yes'
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+ARGS=$@
+
+is_abs_command $COMMAND &&  [[ -n $VIRTUALENV ]] && exit1 "When using a virtual environment you cannot use an absolut command"
+
+
+#
+# setup scl information
+#
+if has_scl ; then
+    SCLS=$(scl -l)
+    set_scl_prefixes    # Fill necessary Variables
+fi
+
+#
+# Prefix the command with "scl enable $SCL" if necessary
+#
+COMMAND_PREFIX=""
+if [[ -n $VIRTUALENV ]] ; then
+    if is_scl_virtualenv $VIRTUALENV ; then
+        set_scl_for_virtualenv $VIRTUALENV
+        COMMAND_PREFIX="scl enable $SCL -- "
+    fi
+    COMMAND_PREFIX="$COMMAND_PREFIX $VIRTUALENV/bin/"
+elif is_abs_command $COMMAND && is_scl_command $COMMAND ; then
+    set_scl_for_command $COMMAND
+    COMMAND_PREFIX="scl enable $SCL -- "
+fi
+
+if [[ $CMD == 'pip' ]] ; then
+    #
+    # If the first argument ist "install" and the -s option is set, try to find the correct
+    # option to disable wheel support
+    #
+    if [[ -n $SOURCE ]] ; then
+        if ${COMMAND_PREFIX}${COMMAND} help install | grep -q -- --no-binary ; then
+            WHEEL_INSTALL_FLAG=' --no-binary :all: '
+        elif ${COMMAND_PREFIX}${COMMAND} help install | grep -q -- --no-use-wheel ; then
+            WHEEL_INSTALL_FLAG=' --no-use-wheel '
+        else
+            WHEEL_INSTALL_FLAG=''
+        fi
+    fi
+    [[ ${ARGS} =~ install* ]] && ARGS="${ARGS} ${WHEEL_INSTALL_FLAG}"
+fi
+
+
+#
+# Execute the command
+#
+EXEC="${COMMAND_PREFIX}${COMMAND} ${ARGS}"
+$EXEC
+exit $?
+
