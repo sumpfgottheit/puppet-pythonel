@@ -1,23 +1,23 @@
-class python::interpreter::rh-python34-scl {
+class python::interpreter::python35-ius {
 
-	$interpreter = 'rh-python34-scl'
-	$bindir      = '/opt/rh/rh-python34/root/usr/bin'
-	$packages    = ['rh-python34', 'rh-python34-python-devel', 'rh-python34-python-pip', 'rh-python34-python-virtualenv']
+	$interpreter  = 'python35-ius'
+	$bindir       = '/usr/bin'
+	$packages     = ['python35u', 'python35u-devel', 'python35u-pip']
 
 	#
 	# Only change if binaries are not called python, pip or virtualenv
 	#
-	$python 		= "$bindir/python"
-	$pip 				= "$bindir/pip"
-	$virtualenv = "$bindir/virtualenv"
+	$python             = "$bindir/python3.5"
+	$pip                = "$bindir/pip3.5"
+	$virtualenv         = "$bindir/virtualenv"
 
   #
   # Hardly need any changes from here..
   #
-  $upgrade_pip            = hiera("python::interpreter::${interpreter}::upgrade_pip", false)
-  $upgrade_virtualenv     = hiera("python::interpreter::${interpreter}::upgrade_virtualenv", false)
-  $packages_ensure        = hiera("python::interpreter::${interpreter}::packages_ensure", 'present')
-	$pip_config_file        = hiera("python::interpreter::${interpreter}::pip_config_file", '')
+  $upgrade_pip        = hiera("python::interpreter::${interpreter}::upgrade_pip", false)
+  $upgrade_virtualenv = hiera("python::interpreter::${interpreter}::upgrade_virtualenv", false)
+  $packages_ensure    = hiera("python::interpreter::${interpreter}::packages_ensure", 'present')
+  $pip_config_file    = hiera("python::interpreter::${interpreter}::pip_config_file", '')
   $global_pip_config_file = hiera("python::interpreter::pip_config_file", '')
 
   $_pip_config_file = $pip_config_file ? {
@@ -33,6 +33,12 @@ class python::interpreter::rh-python34-scl {
 	package { $packages:
 		ensure => $packages_ensure
 	}
+  exec { "install-virtualenv-$interpreter":
+    command     => "/usr/local/bin/ppyp_helper $pip install virtualenv",
+    environment => $environment,
+    unless      => "/usr/local/bin/ppyp_helper $pip install virtualenv |grep 'Requirement already up-to-date: virtualenv'",
+    require     => [File['ppyp_helper'], Package[$packages]]
+  }
 
   if $upgrade_pip {
     exec { "upgrade-pip-$interpreter":
@@ -47,10 +53,9 @@ class python::interpreter::rh-python34-scl {
       command => "/usr/local/bin/ppyp_helper $pip install --upgrade virtualenv",
       environment => $environment,
       unless  => "/usr/local/bin/ppyp_helper $pip install --upgrade virtualenv |grep 'Requirement already up-to-date: virtualenv'",
-      require => [File['ppyp_helper'], Package[$packages]]
+      require => [File['ppyp_helper'], Package[$packages], Exec["install-virtualenv-$interpreter"]]
     }
   }
-
 
 
 }

@@ -1,8 +1,8 @@
-class python::interpreter::rh-python34-scl {
+class python::interpreter::rh-python27-scl {
 
-	$interpreter = 'rh-python34-scl'
-	$bindir      = '/opt/rh/rh-python34/root/usr/bin'
-	$packages    = ['rh-python34', 'rh-python34-python-devel', 'rh-python34-python-pip', 'rh-python34-python-virtualenv']
+	$interpreter  = 'rh-python27-scl'
+	$bindir       = '/opt/rh/rh-python27/root/usr/bin'
+	$packages     = ['python27-python', 'python27-devel', 'python27-pip', 'python27-virtualenv']
 
 	#
 	# Only change if binaries are not called python, pip or virtualenv
@@ -50,7 +50,4 @@ class python::interpreter::rh-python34-scl {
       require => [File['ppyp_helper'], Package[$packages]]
     }
   }
-
-
-
 }

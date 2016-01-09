@@ -85,11 +85,11 @@ define python::virtualenv (
 ) {
 
   if $ensure == 'present' {
-	$bindir     = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
-	$python     = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
-	$pip        = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
-	$virtualenv = inline_template("<%= scope['python::interpreter::${interpreter}::virtualenv'] %>")
-	$ppyp_helper    = '/usr/local/bin/ppyp_helper'
+	  $bindir      = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
+	  $python      = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
+	  $pip         = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
+	  $virtualenv  = inline_template("<%= scope['python::interpreter::${interpreter}::virtualenv'] %>")
+	  $ppyp_helper = '/usr/local/bin/ppyp_helper'
 
     file { $venv_dir:
       ensure => directory,
@@ -103,11 +103,10 @@ define python::virtualenv (
       default  => ''
     }
 
-	if $pip_config_file {
-		$_environment = concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
-	} else {
-		$_environment = $environment
-	}
+    $_environment = $pip_config_file ? {
+      undef   => $environment,
+      default => concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
+    }
 
 
     exec { "create_python_virtualenv_${venv_dir}":
@@ -124,7 +123,7 @@ define python::virtualenv (
     if $requirements_file {
       exec { "python_requirements_initial_install_${requirements}_${venv_dir}":
         command     => "$ppyp_helper pip -v $venv_dir install -r $requirements_file $extra_pip_args",
-		onlyif      => "$ppyp_helper pip -v $venv_dir | grep -v 'Requirement already satisfied'",
+		    onlyif      => "$ppyp_helper pip -v $venv_dir | grep -v 'Requirement already satisfied'",
         refreshonly => true,
         timeout     => $timeout,
         user        => $owner,
@@ -135,11 +134,13 @@ define python::virtualenv (
 
     }
   } elsif $ensure == 'absent' {
+
     file { $venv_dir:
       ensure  => absent,
       force   => true,
       recurse => true,
       purge   => true,
     }
+
   }
 }
