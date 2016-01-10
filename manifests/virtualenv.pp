@@ -114,10 +114,7 @@ define python::virtualenv (
       default => concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
     }
 
-    $_extra_pip_args = $base_script_dir ? {
-      ""      => "$interpreter_extra_pip_args $extra_pip_args",
-      default => "--install-option='--install-scripts=$base_script_dir' $interpreter_extra_pip_args $extra_pip_args"
-    }
+    $_extra_pip_args = "$interpreter_extra_pip_args $extra_pip_args"
 
     exec { "create_python_virtualenv_${venv_dir}":
       command     => "$ppyp_helper virtualenv $_systempkgs $venv_dir",
