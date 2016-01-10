@@ -7,9 +7,11 @@ class python::interpreter::python35-ius {
 	#
 	# Only change if binaries are not called python, pip or virtualenv
 	#
-	$python             = "$bindir/python3.5"
-	$pip                = "$bindir/pip3.5"
-	$virtualenv         = "/usr/local/bin/python35-ius/virtualenv-3.5"
+	$python         = "$bindir/python3.5"
+	$pip            = "$bindir/pip3.5"
+	$virtualenv     = "/usr/local/bin/python35-ius/virtualenv-3.5"
+  $extra_pip_args = ""
+  $base_script_dir   = '/usr/local/bin/python35-ius'
 
   #
   # Hardly need any changes from here..
@@ -34,13 +36,18 @@ class python::interpreter::python35-ius {
 		ensure => $packages_ensure
 	}
 
+  $_extra_pip_args = $base_script_dir ? {
+    ""      => $extra_pip_args,
+    default => "--install-option='--install-scripts=$base_script_dir' $extra_pip_args"
+  }
+
   file {'/usr/local/bin/python35-ius':
     ensure => 'directory'
   }
   exec { "install-virtualenv-$interpreter":
-    command     => "/usr/local/bin/ppyp_helper $pip install virtualenv --install-option='--install-scripts=/usr/local/bin/python35-ius'",
+    command     => "/usr/local/bin/ppyp_helper $pip install virtualenv $_extra_pip_args",
     environment => $environment,
-    unless      => "/usr/local/bin/ppyp_helper $pip install virtualenv --install-option='--install-scripts=/usr/local/bin/python35-ius' |grep 'Requirement already satisfied (use --upgrade to upgrade): virtualenv'",
+    unless      => "/usr/local/bin/ppyp_helper $pip install virtualenv $_extra_pip_args |grep 'Requirement already satisfied (use --upgrade to upgrade): virtualenv'",
     require     => [File['ppyp_helper', '/usr/local/bin/python35-ius'], Package[$packages]]
   }
 

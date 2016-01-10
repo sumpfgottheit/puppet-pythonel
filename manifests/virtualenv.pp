@@ -56,9 +56,8 @@
 
 # python::virtualenv { '/var/www/project2':
 #   interpreter     => 'rh-python34-scl',
-#   requirements    => '/var/www/project1/requirements.txt',
 #   systempkgs      => false,
-#   pip_config_file => '/etc/pip.conf'
+#   pip_config_file => '/var/www/project2/pip.conf'
 # }
 #
 # === Authors
@@ -127,7 +126,7 @@ define python::virtualenv (
     }
 
     if $requirements_file {
-      exec { "python_requirements_initial_install_${requirements}_${venv_dir}":
+      exec { "python_requirements_install_${requirements}_${venv_dir}":
         command     => "$ppyp_helper pip -v $venv_dir install -r $requirements_file $extra_pip_args",
 		    onlyif      => "$ppyp_helper pip -v $venv_dir | grep -v 'Requirement already satisfied'",
         refreshonly => true,

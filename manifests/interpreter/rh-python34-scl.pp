@@ -7,9 +7,12 @@ class python::interpreter::rh-python34-scl {
 	#
 	# Only change if binaries are not called python, pip or virtualenv
 	#
-	$python 		= "$bindir/python"
-	$pip 				= "$bindir/pip"
-	$virtualenv = "$bindir/virtualenv"
+	$python 		    = "$bindir/python"
+	$pip 				     = "$bindir/pip"
+	$virtualenv      = "$bindir/virtualenv"
+  $extra_pip_args  = ""
+  $base_script_dir = ""
+
 
   #
   # Hardly need any changes from here..
