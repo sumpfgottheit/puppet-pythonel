@@ -87,11 +87,12 @@ define python::virtualenv (
 ) {
 
   if $ensure == 'present' {
-	  $bindir      = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
-	  $python      = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
-	  $pip         = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
-	  $virtualenv  = inline_template("<%= scope['python::interpreter::${interpreter}::virtualenv'] %>")
-	  $ppyp_helper = '/usr/local/bin/ppyp_helper'
+    $bindir                     = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
+    $python                     = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
+    $pip                        = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
+    $interpreter_extra_pip_args = inline_template("<%= scope['python::interpreter::${interpreter}::extra_pip_args'] %>")
+    $base_script_dir            = inline_template("<%= scope['python::interpreter::${interpreter}::base_script_dir'] %>")
+    $ppyp_helper                = '/usr/local/bin/ppyp_helper'
 
     # Ensure that the interpreter is installed before creating the virtal environment -> require this class
     $interpreter_class = "python::interpreter::$interpreter"
@@ -113,9 +114,13 @@ define python::virtualenv (
       default => concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
     }
 
+    $_extra_pip_args = $base_script_dir ? {
+      ""      => "$interpreter_extra_pip_args $extra_pip_args",
+      default => "--install-option='--install-scripts=$base_script_dir' $interpreter_extra_pip_args $extra_pip_args"
+    }
 
     exec { "create_python_virtualenv_${venv_dir}":
-      command     => "$ppyp_helper $virtualenv $_systempkgs $venv_dir",
+      command     => "$ppyp_helper virtualenv $_systempkgs $venv_dir",
       user        => $owner,
       creates     => "${venv_dir}/bin/activate",
       path        => $path,
@@ -127,8 +132,8 @@ define python::virtualenv (
 
     if $requirements_file {
       exec { "python_requirements_install_${requirements}_${venv_dir}":
-        command     => "$ppyp_helper pip -v $venv_dir install -r $requirements_file $extra_pip_args",
-		    onlyif      => "$ppyp_helper pip -v $venv_dir | grep -v 'Requirement already satisfied'",
+        command     => "$ppyp_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args",
+		    onlyif      => "$ppyp_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args | grep -v 'Requirement already satisfied'",
         refreshonly => true,
         timeout     => $timeout,
         user        => $owner,
