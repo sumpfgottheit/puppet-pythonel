@@ -170,8 +170,8 @@ function is_abs_command {
 
 COMMAND=$1
 shift
-echo $COMMAND | grep -q -E ".*pip$" && CMD='pip'
-echo $COMMAND | grep -q -E ".*virtualenv$" && CMD='virtualenv'
+echo $COMMAND | grep -q -E ".*pip[^ /]*" && CMD='pip'
+echo $COMMAND | grep -q -E ".*virtualenv[^ /]*$" && CMD='virtualenv'
 echo $CMD | grep -q -E "pip|virtualenv" || exit1 "Command must be 'pip' or 'virtualenv'"
 
 VIRTUALENV=''

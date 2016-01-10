@@ -63,9 +63,12 @@
 #
 # === Authors
 #
-# Sergey Stankevich (Author of original puppet python module)
-# Shiva Poudel (Author of original puppet python module)
 # Florian Sachs
+#
+# The original puppet-python module, on which this module is based,
+# has been written by:
+# Sergey Stankevich
+# Shiva Poudel
 #
 define python::virtualenv (
   $ensure            = present,
@@ -90,6 +93,9 @@ define python::virtualenv (
 	  $pip         = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
 	  $virtualenv  = inline_template("<%= scope['python::interpreter::${interpreter}::virtualenv'] %>")
 	  $ppyp_helper = '/usr/local/bin/ppyp_helper'
+
+    # Ensure that the interpreter is installed before creating the virtal environment -> require this class
+    $interpreter_class = "python::interpreter::$interpreter"
 
     file { $venv_dir:
       ensure => directory,
@@ -117,7 +123,7 @@ define python::virtualenv (
       cwd         => '/tmp',
       environment => $_environment,
       unless      => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate", #Unless activate exists and VIRTUAL_ENV is correct we re-create the virtualenv
-      require     => File[$venv_dir, $ppyp_helper],
+      require     => [File[$venv_dir, $ppyp_helper], Class[$interpreter_class]],
     }
 
     if $requirements_file {
@@ -129,7 +135,8 @@ define python::virtualenv (
         user        => $owner,
         subscribe   => Exec["create_python_virtualenv_${venv_dir}"],
         environment => $_environment,
-        cwd         => $cwd
+        cwd         => $cwd,
+        require     => [File[$venv_dir, $ppyp_helper], Class[$interpreter_class]],
       }
 
     }

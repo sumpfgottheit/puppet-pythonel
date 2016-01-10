@@ -1,8 +1,8 @@
 class python::interpreter::rh-python27-scl {
 
 	$interpreter  = 'rh-python27-scl'
-	$bindir       = '/opt/rh/rh-python27/root/usr/bin'
-	$packages     = ['python27-python', 'python27-devel', 'python27-pip', 'python27-virtualenv']
+	$bindir       = '/opt/rh/python27/root/usr/bin'
+	$packages     = ['python27-python', 'python27-python-devel', 'python27-python-pip', 'python27-python-virtualenv']
 
 	#
 	# Only change if binaries are not called python, pip or virtualenv

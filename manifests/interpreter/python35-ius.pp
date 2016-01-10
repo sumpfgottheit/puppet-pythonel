@@ -9,7 +9,7 @@ class python::interpreter::python35-ius {
 	#
 	$python             = "$bindir/python3.5"
 	$pip                = "$bindir/pip3.5"
-	$virtualenv         = "$bindir/virtualenv"
+	$virtualenv         = "/usr/local/bin/python35-ius/virtualenv-3.5"
 
   #
   # Hardly need any changes from here..
@@ -33,11 +33,15 @@ class python::interpreter::python35-ius {
 	package { $packages:
 		ensure => $packages_ensure
 	}
+
+  file {'/usr/local/bin/python35-ius':
+    ensure => 'directory'
+  }
   exec { "install-virtualenv-$interpreter":
-    command     => "/usr/local/bin/ppyp_helper $pip install virtualenv",
+    command     => "/usr/local/bin/ppyp_helper $pip install virtualenv --install-option='--install-scripts=/usr/local/bin/python35-ius'",
     environment => $environment,
-    unless      => "/usr/local/bin/ppyp_helper $pip install virtualenv |grep 'Requirement already up-to-date: virtualenv'",
-    require     => [File['ppyp_helper'], Package[$packages]]
+    unless      => "/usr/local/bin/ppyp_helper $pip install virtualenv --install-option='--install-scripts=/usr/local/bin/python35-ius' |grep 'Requirement already satisfied (use --upgrade to upgrade): virtualenv'",
+    require     => [File['ppyp_helper', '/usr/local/bin/python35-ius'], Package[$packages]]
   }
 
   if $upgrade_pip {
@@ -53,7 +57,7 @@ class python::interpreter::python35-ius {
       command => "/usr/local/bin/ppyp_helper $pip install --upgrade virtualenv",
       environment => $environment,
       unless  => "/usr/local/bin/ppyp_helper $pip install --upgrade virtualenv |grep 'Requirement already up-to-date: virtualenv'",
-      require => [File['ppyp_helper'], Package[$packages], Exec["install-virtualenv-$interpreter"]]
+      require => [File['ppyp_helper', '/usr/local/bin/python35-ius'], Package[$packages], Exec["install-virtualenv-$interpreter"]]
     }
   }
 
