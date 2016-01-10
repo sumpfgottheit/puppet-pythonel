@@ -26,6 +26,8 @@ include python::interpreter::rh-python34-scl
 
 By using the `include` construct, every interpreter can included by multiple applications without any problems. The interpreter-manifests installs the interpreter using the `package` ressource, but **without defining a yumrepo ressource**. If you define your repository once, you can put the `Yumrepo <|title = redhat-scl-el6 |>` in the interpreter manifest. The interpreters define some variables that are used by `virtualenv` and `pip` to adapt to the calling interpeter.
 
+The resources `python::pip` and `python::virtualenv` work in a similar way to the original module.
+
 ## ppyp_helper
 The biggest problem defining python environments via puppet ist the lack of information at catalog compile time. Which python version/pip version combination is available and needs which parameters. It's a big mess. By including a python interpreter, the file `/usr/local/bin/ppyp_helper` ist installed. This helper script takes care of all the crazy, local stuff and helps the `Exec` ressources to stay readable. When calling `pytophon::pip`, the helper-script is called on the node and enables the sofware collection if necessary.
 
@@ -80,6 +82,10 @@ Often, you want to use a `PIP_CONFIG_FILE` for all interpreters on a system, for
 python::interpreter::pip_config_file: /etc/pip.conf
 ```
 If you manage the pip.conf via puppet, you can set the metaparameter `before => File['/usr/local/bin/ppyp_helper` to have your `pip.conf` inplace before the interpreter is configured. The file `/usr/local/bin/pppy_helper` is installed in `manifests/interpreter/prep.pp` and every `pip` or `virtualenv` call has a `require =>` to this file.
+
+## Tests
+
+Nope - no tests.
 
 ## ppyp_helper - help
 ```
