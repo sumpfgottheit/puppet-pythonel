@@ -1,3 +1,8 @@
+# Supported Platforms
+
+- **Enterprise Linux 6**: RHEL6, CentOS6 and clones (not tested)
+- **Enterprise Linux 7**: RHEL7, CentOS7 and clones (not tested)
+
 # Why another Puppet-Python module?
 
 * Support of **multiple Python interpreters**, including interpreters from **Software Collections** and the  **IUS** - repository.
@@ -26,7 +31,9 @@ include pythonel::interpreter::rh-python34-scl
 
 By using the `include` construct, every interpreter can included by multiple applications without any problems. The interpreter-manifests installs the interpreter using the `package` ressource, but **without defining a yumrepo ressource**. If you define your repository once, you can put the `Yumrepo <|title = redhat-scl-el6 |>` in the interpreter manifest. The interpreters define some variables that are used by `virtualenv` and `pip` to adapt to the calling interpeter.
 
-The resources `pythonel::pip` and `pythonel::virtualenv` work in a similar way to the original module.
+The resources `pythonel::pip` and `pythonel::virtualenv` work in a similar way to the original module. `pythonel::pip` has fewer options than the 
+original module. This is intened. I think that a simpel requirements-file, that can be used with `pythonel::virtualenv` is better and easier than building
+the logic using a puppet resource. Drop your requirements file into your application-directory and let `pythonel::virtualenv` pick it up.
 
 ## pythonel_helper
 The biggest problem defining python environments via puppet ist the lack of information at catalog compile time. Which python version/pip version combination is available and needs which parameters. It's a big mess. By including a python interpreter, the file `/usr/local/bin/pythonel_helper` ist installed. This helper script takes care of all the crazy, local stuff and helps the `Exec` ressources to stay readable. When calling `pytophon::pip`, the helper-script is called on the node and enables the sofware collection if necessary.
@@ -52,6 +59,18 @@ The biggest problem defining python environments via puppet ist the lack of info
     interpreter => 'rh-python34-scl'
   }
 ```
+
+# YumRepo handling
+
+As our systems have no connection to the internet, the handling of YumRepositories painful. Every interpreter.pp has a section, that starts with 
+```
+    ################################
+    # YumRepo and package handling #
+    # Adapt to your needs          #
+    ################################
+```
+
+Adapt the files and make sure, that the packages are installed.
 
 # Configuration
 
@@ -85,7 +104,8 @@ If you manage the pip.conf via puppet, you can set the metaparameter `before => 
 
 ## Tests
 
-Nope - no tests.
+Most of the logic is executed on the local node by `pythonel_helper`, so rspec-tests don't help much and there is no need for trivial tests. So no -
+there are no tests.
 
 ## pythonel_helper - help
 ```

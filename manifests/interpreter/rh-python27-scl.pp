@@ -30,12 +30,19 @@ class pythonel::interpreter::rh-python27-scl {
         ''      => [],
         default => [ "PIP_CONFIG_FILE=$_pip_config_file"]
     }
-
     include pythonel::interpreter::prep # Define pythonel_helper
-    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+
+    ################################
+    # YumRepo and package handling #
+    # Adapt to your needs          #
+    ################################
+    #realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
     package { $packages:
-        ensure => $packages_ensure
+        ensure => $packages_ensure,
     }
+    ####################################
+    # Packages should now be installed #
+    ####################################
 
     if $upgrade_pip {
         exec { "upgrade-pip-$interpreter":

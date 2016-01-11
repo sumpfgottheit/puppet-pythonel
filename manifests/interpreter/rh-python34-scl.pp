@@ -23,6 +23,20 @@ class pythonel::interpreter::rh-python34-scl {
     $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
     $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 
+
+    ################################
+    # YumRepo and package handling #
+    # Adapt to your needs          #
+    ################################
+    #realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+    package { $packages:
+        ensure => $packages_ensure,
+    }
+    ####################################
+    # Packages should now be installed #
+    ####################################
+
+
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,
         default  => $pip_config_file
@@ -33,10 +47,6 @@ class pythonel::interpreter::rh-python34-scl {
     }
 
     include pythonel::interpreter::prep # Define pythonel_helper
-    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
-    package { $packages:
-        ensure => $packages_ensure,
-    }
 
     if $upgrade_pip {
         exec { "upgrade-pip-$interpreter":

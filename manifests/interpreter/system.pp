@@ -22,6 +22,20 @@ class pythonel::interpreter::system {
     $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
     $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 
+
+    ################################
+    # YumRepo and package handling #
+    # Adapt to your needs          #
+    ################################
+    #realize Package[$packages]              # Packages are defined globally and only realized
+    package { $packages:                   # Define the package ressources here...
+        ensure => $packages_ensure
+    }
+    ####################################
+    # Packages should now be installed #
+    ####################################
+
+
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,
         default  => $pip_config_file
@@ -32,10 +46,6 @@ class pythonel::interpreter::system {
     }
 
     include pythonel::interpreter::prep # Define pythonel_helper
-    realize Package[$packages]
-    #package { $packages:
-    #    ensure => $packages_ensure
-    #}
 
     if $upgrade_pip {
         exec { "upgrade-pip-$interpreter":

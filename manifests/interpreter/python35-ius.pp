@@ -22,6 +22,18 @@ class pythonel::interpreter::python35-ius {
     $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
     $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 
+    ################################
+    # YumRepo and package handling #
+    # Adapt to your needs          #
+    ################################
+    #realize Swrepo::Repo['ius-python-el6']
+    package { $packages:
+        ensure => $packages_ensure
+    }
+    ####################################
+    # Packages should now be installed #
+    ####################################
+
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,
         default  => $pip_config_file
@@ -31,12 +43,7 @@ class pythonel::interpreter::python35-ius {
         default => [ "PIP_CONFIG_FILE=$_pip_config_file"]
     }
 
-
     include pythonel::interpreter::prep # Define pythonel_helper
-    realize Swrepo::Repo['ius-python-el6']
-    package { $packages:
-        ensure => $packages_ensure
-    }
 
     $_extra_pip_args = $base_script_dir ? {
         ""      => $extra_pip_args,
