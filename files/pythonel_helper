@@ -3,15 +3,15 @@
 # Puppet Python Pip Helper 
 #
 read -r -d '' USAGE <<'EOF'
-usage: ppyp_helper pip [-v virtualenv] [-s] PIP-ARGS
-       ppyp_helper virtualenv [-s] VIRTUALENV-ARGS
+usage: pythonel_helper pip [-v virtualenv] [-s] PIP-ARGS
+       pythonel_helper virtualenv [-s] VIRTUALENV-ARGS
 EOF
 
 read -r -d '' HELP <<'EOF'
-usage: ppyp_helper pip [-v virtualenv] [-s] PIP-ARGS
-       ppyp_helper virtualenv [-s] VIRTUALENV-ARGS
+usage: pythonel_helper pip [-v virtualenv] [-s] PIP-ARGS
+       pythonel_helper virtualenv [-s] VIRTUALENV-ARGS
 
-ppyp_helper pip:
+pythonel_helper pip:
   Execute pip from the environment [-v]. If the environment is created
   using software collections (scl), enable the collection first.
   The [-s] "source" option sets the parameter --no-use-wheel|--no-binary :all:
@@ -19,7 +19,7 @@ ppyp_helper pip:
   If the "pip" command is used with full path and the path resides within a
   software collection, the scl is enabled.
 
-ppyp_helper virtualenv:
+pythonel_helper virtualenv:
   Create a new virtualenv. If the "virtualenv" command is used with full path 
   and the path resides within a software collection, the scl is enabled.
   The parameter [-s] enables the system-site-packages.
@@ -39,21 +39,21 @@ Options for "virtualenv" command:
 Correctly uses SCLs (Software Collections) !!!
 
 Examples:
-  ppyp_helper pip install flask
+  pythonel_helper pip install flask
     Install flask for the default system python interpreter
 
-  ppyp_helper pip -v /myvenv -s flask
+  pythonel_helper pip -v /myvenv -s flask
     Install flask for the Environment /myvenv and don't use binaries.
     SCLs are enabled if necessary
 
-  ppyp_helper /opt/rh/rh-python34/root/usr/bin/pip install flask
+  pythonel_helper /opt/rh/rh-python34/root/usr/bin/pip install flask
     Install flask into the system-site-packages of the 
     rh-python34 scl interpreter.
 
-  ppyp_helper virtualenv /myvenv
+  pythonel_helper virtualenv /myvenv
     Create the virtualenv /myvenv from the default virtualenv-command
 
-  ppyp_helper /opt/rh/rh-python34/root/usr/bin/virtualenv  /myvenv
+  pythonel_helper /opt/rh/rh-python34/root/usr/bin/virtualenv  /myvenv
     Create the virtualenv /myvenv for the rh-python34 scl interpreter
 
 EOF

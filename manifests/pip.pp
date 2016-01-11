@@ -1,4 +1,4 @@
-# == Define: python::pip
+# == Define: pythonel::pip
 #
 # Executes pip install in an virtualenv
 #
@@ -31,7 +31,7 @@
 #
 # === Examples
 #
-#  python::pip { 'project1-colorama':
+#  pythonel::pip { 'project1-colorama':
 #    package     => 'colorama',
 #    virtualenv  => '/opt/virtualenvs/project1',
 #    interpreter => 'rh-python34-scl'
@@ -40,7 +40,7 @@
 #
 # Florian Sachs
 #
-define python::pip (
+define pythonel::pip (
   $package           = $name,
   $virtualenv        = undef,
   $interpreter       = undef,
@@ -52,15 +52,15 @@ define python::pip (
   $extra_pip_args    = '',
 ) {
 
-  $bindir                     = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
-  $python                     = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
-  $pip                        = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
-  $interpreter_extra_pip_args = inline_template("<%= scope['python::interpreter::${interpreter}::extra_pip_args'] %>")
-  $base_script_dir            = inline_template("<%= scope['python::interpreter::${interpreter}::base_script_dir'] %>")
-  $ppyp_helper                = '/usr/local/bin/ppyp_helper'
+  $bindir                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::bindir'] %>")
+  $python                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::python'] %>")
+  $pip                        = inline_template("<%= scope['pythonel::interpreter::${interpreter}::pip'] %>")
+  $interpreter_extra_pip_args = inline_template("<%= scope['pythonel::interpreter::${interpreter}::extra_pip_args'] %>")
+  $base_script_dir            = inline_template("<%= scope['pythonel::interpreter::${interpreter}::base_script_dir'] %>")
+  $pythonel_helper            = '/usr/local/bin/pythonel_helper'
 
   # Ensure that the interpreter is installed before creating the virtal environment -> require this class
-  $interpreter_class = "python::interpreter::$interpreter"
+  $interpreter_class = "pythonel::interpreter::$interpreter"
 
   $_environment = $pip_config_file ? {
     undef   => $environment,
@@ -74,15 +74,16 @@ define python::pip (
 
   $_pip = $virtualenv ? {
     undef   => "$pip",                # Without virtualenv, use "base"-pip of provided interpreter
-    default => "pip -v $virtualenv"   # Just call the pip within the virtualenv. The ppyp_helper takes care of scl
+    default => "pip -v $virtualenv"   # Just call the pip within the virtualenv. The pythonel_helper takes care of scl
   }
 
   exec { "pip_install_${name}_${interpreter}_${virtualenv}":
-    command     => "$ppyp_helper $_pip install $package $_extra_pip_args",
+    command     => "$pythonel_helper $_pip install $package $_extra_pip_args",
+    unless      => "$pythonel_helper $_pip install $package $_extra_pip_args | grep 'Requirement already satisfied'",
     path        => $path,
     cwd         => $cwd,
     environment => $_environment,
-    require     => [File[$ppyp_helper], Class[$interpreter_class]],
+    require     => [File[$pythonel_helper], Class[$interpreter_class]],
   }
 
 }

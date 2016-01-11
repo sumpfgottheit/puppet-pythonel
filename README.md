@@ -21,32 +21,32 @@ Every Python interpreter ist defined within `manifest/interpreter/${interpreter}
 
 To use on of the interpreters, just include it:
 ```puppet
-include python::interpreter::rh-python34-scl
+include pythonel::interpreter::rh-python34-scl
 ```
 
 By using the `include` construct, every interpreter can included by multiple applications without any problems. The interpreter-manifests installs the interpreter using the `package` ressource, but **without defining a yumrepo ressource**. If you define your repository once, you can put the `Yumrepo <|title = redhat-scl-el6 |>` in the interpreter manifest. The interpreters define some variables that are used by `virtualenv` and `pip` to adapt to the calling interpeter.
 
-The resources `python::pip` and `python::virtualenv` work in a similar way to the original module.
+The resources `pythonel::pip` and `pythonel::virtualenv` work in a similar way to the original module.
 
-## ppyp_helper
-The biggest problem defining python environments via puppet ist the lack of information at catalog compile time. Which python version/pip version combination is available and needs which parameters. It's a big mess. By including a python interpreter, the file `/usr/local/bin/ppyp_helper` ist installed. This helper script takes care of all the crazy, local stuff and helps the `Exec` ressources to stay readable. When calling `pytophon::pip`, the helper-script is called on the node and enables the sofware collection if necessary.
+## pythonel_helper
+The biggest problem defining python environments via puppet ist the lack of information at catalog compile time. Which python version/pip version combination is available and needs which parameters. It's a big mess. By including a python interpreter, the file `/usr/local/bin/pythonel_helper` ist installed. This helper script takes care of all the crazy, local stuff and helps the `Exec` ressources to stay readable. When calling `pytophon::pip`, the helper-script is called on the node and enables the sofware collection if necessary.
 
 # Usage
 
 ```puppet
   # Install the rh-python34-scl interpreter
-  include python::interpreter::rh-python34-scl
+  include pythonel::interpreter::rh-python34-scl
   
   # Create a virtualenv within /opt/virtualenvs/myapp with the correct interpreter
   # and install the modules from the requirements file
-  python::virtualenv { '/opt/virtualenvs/myapp':
+  pythonel::virtualenv { '/opt/virtualenvs/myapp':
     interpreter => 'rh-python34-scl',
     requirements_file => '/opt/myapp/requirements.txt',
     systempkgs => true,
   } ->
   # Install the colorama module into the directory
   # if no virtuelenv is give, install it systemwide
-  python::pip { 'myapp-colorama':
+  pythonel::pip { 'myapp-colorama':
     package     => 'colorama',
     virtualenv  => '/opt/virtualenvs/myapp',
     interpreter => 'rh-python34-scl'
@@ -57,44 +57,44 @@ The biggest problem defining python environments via puppet ist the lack of info
 
 Each of the `python/manifests/interpreter/${interpreter}.pp` manifests query 5 variables via `hiera`:
 ```puppet
-$upgrade_pip            = hiera("python::interpreter::${interpreter}::upgrade_pip", false)
-$upgrade_virtualenv     = hiera("python::interpreter::${interpreter}::upgrade_virtualenv", false)
-$packages_ensure        = hiera("python::interpreter::${interpreter}::packages_ensure", 'present')
-$pip_config_file        = hiera("python::interpreter::${interpreter}::pip_config_file", '')
-$global_pip_config_file = hiera("python::interpreter::pip_config_file", '')
+$upgrade_pip            = hiera("pythonel::interpreter::${interpreter}::upgrade_pip", false)
+$upgrade_virtualenv     = hiera("pythonel::interpreter::${interpreter}::upgrade_virtualenv", false)
+$packages_ensure        = hiera("pythonel::interpreter::${interpreter}::packages_ensure", 'present')
+$pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
+$global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 ```
 
 Example: For the python interpreter `rh-python34-scl`, you can set the following configartions via hiera
 ```yaml
 # run "pip install --upgrade pip" during installation of the python interpreter
-python::interpreter::rh-python34-scl::upgrade_pip: true/false
+pythonel::interpreter::rh-python34-scl::upgrade_pip: true/false
 # run "pip install --upgrade virtualenv" during installation of the python interpreter
-python::interpreter::rh-python34-scl::upgrade_upgrade_virtualenv: true/false
+pythonel::interpreter::rh-python34-scl::upgrade_upgrade_virtualenv: true/false
 # set package=>ensure to "latest" or "present"
-python::interpreter::rh-python34-scl::package_ensure: present/latest
+pythonel::interpreter::rh-python34-scl::package_ensure: present/latest
 # Set an explicit 'PIP_CONFIG_FILE' for this interpreter
-python::interpreter::rh-python34-scl::pip_config_file: /etc/pip-rh-python34-scl.conf
+pythonel::interpreter::rh-python34-scl::pip_config_file: /etc/pip-rh-python34-scl.conf
 ```
 
-Often, you want to use a `PIP_CONFIG_FILE` for all interpreters on a system, for example to let it point to you internal Pypi-mirror. Use the `python::interpreter::pip_config_file` hiera-variable. An interpreter-specific `PIP_CONFIG_FILE` has precedence over the global file.
+Often, you want to use a `PIP_CONFIG_FILE` for all interpreters on a system, for example to let it point to you internal Pypi-mirror. Use the `pythonel::interpreter::pip_config_file` hiera-variable. An interpreter-specific `PIP_CONFIG_FILE` has precedence over the global file.
 
 ```puppet
-python::interpreter::pip_config_file: /etc/pip.conf
+pythonel::interpreter::pip_config_file: /etc/pip.conf
 ```
-If you manage the pip.conf via puppet, you can set the metaparameter `before => File['/usr/local/bin/ppyp_helper` to have your `pip.conf` inplace before the interpreter is configured. The file `/usr/local/bin/pppy_helper` is installed in `manifests/interpreter/prep.pp` and every `pip` or `virtualenv` call has a `require =>` to this file.
+If you manage the pip.conf via puppet, you can set the metaparameter `before => File['/usr/local/bin/pythonel_helper` to have your `pip.conf` inplace before the interpreter is configured. The file `/usr/local/bin/pppy_helper` is installed in `manifests/interpreter/prep.pp` and every `pip` or `virtualenv` call has a `require =>` to this file.
 
 ## Tests
 
 Nope - no tests.
 
-## ppyp_helper - help
+## pythonel_helper - help
 ```
- # ppyp_helper 
+ # pythonel_helper
 
-usage: ppyp_helper pip [-v virtualenv] [-s] PIP-ARGS
-       ppyp_helper virtualenv [-s] VIRTUALENV-ARGS
+usage: pythonel_helper pip [-v virtualenv] [-s] PIP-ARGS
+       pythonel_helper virtualenv [-s] VIRTUALENV-ARGS
 
-ppyp_helper pip:
+pythonel_helper pip:
   Execute pip from the environment [-v]. If the environment is created
   using software collections (scl), enable the collection first.
   The [-s] "source" option sets the parameter --no-use-wheel|--no-binary :all:
@@ -102,7 +102,7 @@ ppyp_helper pip:
   If the "pip" command is used with full path and the path resides within a
   software collection, the scl is enabled.
 
-ppyp_helper virtualenv:
+pythonel_helper virtualenv:
   Create a new virtualenv. If the "virtualenv" command is used with full path 
   and the path resides within a software collection, the scl is enabled.
   The parameter [-s] enables the system-site-packages.
@@ -122,20 +122,20 @@ Options for "virtualenv" command:
 Correctly uses SCLs (Software Collections) !!!
 
 Examples:
-  ppyp_helper pip install flask
+  pythonel_helper pip install flask
     Install flask for the default system python interpreter
 
-  ppyp_helper pip -v /myvenv -s flask
+  pythonel_helper pip -v /myvenv -s flask
     Install flask for the Environment /myvenv and don't use binaries.
     SCLs are enabled if necessary
 
-  ppyp_helper /opt/rh/rh-python34/root/usr/bin/pip install flask
+  pythonel_helper /opt/rh/rh-python34/root/usr/bin/pip install flask
     Install flask into the system-site-packages of the 
     rh-python34 scl interpreter.
 
-  ppyp_helper virtualenv /myvenv
+  pythonel_helper virtualenv /myvenv
     Create the virtualenv /myvenv from the default virtualenv-command
 
-  ppyp_helper /opt/rh/rh-python34/root/usr/bin/virtualenv  /myvenv
+  pythonel_helper /opt/rh/rh-python34/root/usr/bin/virtualenv  /myvenv
     Create the virtualenv /myvenv for the rh-python34 scl interpreter
 

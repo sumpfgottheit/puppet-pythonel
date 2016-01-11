@@ -1,4 +1,4 @@
-# == Define: python::virtualenv
+# == Define: pythonel::virtualenv
 #
 # Creates Python virtualenv.
 #
@@ -48,13 +48,13 @@
 #
 # === Examples
 #
-# python::virtualenv { '/var/www/project1':
+# pythonel::virtualenv { '/var/www/project1':
 #   interpreter  => 'system',
 #   requirements => '/var/www/project1/requirements.txt',
 #   systempkgs   => true,
 # }
 
-# python::virtualenv { '/var/www/project2':
+# pythonel::virtualenv { '/var/www/project2':
 #   interpreter     => 'rh-python34-scl',
 #   systempkgs      => false,
 #   pip_config_file => '/var/www/project2/pip.conf'
@@ -69,7 +69,7 @@
 # Sergey Stankevich
 # Shiva Poudel
 #
-define python::virtualenv (
+define pythonel::virtualenv (
   $ensure            = present,
   $interpreter       = 'system',
   $requirements_file = false,
@@ -87,15 +87,15 @@ define python::virtualenv (
 ) {
 
   if $ensure == 'present' {
-    $bindir                     = inline_template("<%= scope['python::interpreter::${interpreter}::bindir'] %>")
-    $python                     = inline_template("<%= scope['python::interpreter::${interpreter}::python'] %>")
-    $pip                        = inline_template("<%= scope['python::interpreter::${interpreter}::pip'] %>")
-    $interpreter_extra_pip_args = inline_template("<%= scope['python::interpreter::${interpreter}::extra_pip_args'] %>")
-    $base_script_dir            = inline_template("<%= scope['python::interpreter::${interpreter}::base_script_dir'] %>")
-    $ppyp_helper                = '/usr/local/bin/ppyp_helper'
+    $bindir                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::bindir'] %>")
+    $python                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::python'] %>")
+    $pip                        = inline_template("<%= scope['pythonel::interpreter::${interpreter}::pip'] %>")
+    $interpreter_extra_pip_args = inline_template("<%= scope['pythonel::interpreter::${interpreter}::extra_pip_args'] %>")
+    $base_script_dir            = inline_template("<%= scope['pythonel::interpreter::${interpreter}::base_script_dir'] %>")
+    $pythonel_helper                = '/usr/local/bin/pythonel_helper'
 
     # Ensure that the interpreter is installed before creating the virtal environment -> require this class
-    $interpreter_class = "python::interpreter::$interpreter"
+    $interpreter_class = "pythonel::interpreter::$interpreter"
 
     file { $venv_dir:
       ensure => directory,
@@ -117,27 +117,27 @@ define python::virtualenv (
     $_extra_pip_args = "$interpreter_extra_pip_args $extra_pip_args"
 
     exec { "create_python_virtualenv_${venv_dir}":
-      command     => "$ppyp_helper virtualenv $_systempkgs $venv_dir",
+      command     => "$pythonel_helper virtualenv $_systempkgs $venv_dir",
       user        => $owner,
       creates     => "${venv_dir}/bin/activate",
       path        => $path,
       cwd         => '/tmp',
       environment => $_environment,
       unless      => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate", #Unless activate exists and VIRTUAL_ENV is correct we re-create the virtualenv
-      require     => [File[$venv_dir, $ppyp_helper], Class[$interpreter_class]],
+      require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class]],
     }
 
     if $requirements_file {
       exec { "python_requirements_install_${requirements}_${venv_dir}":
-        command     => "$ppyp_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args",
-		    onlyif      => "$ppyp_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args | grep -v 'Requirement already satisfied'",
+        command     => "$pythonel_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args",
+		    onlyif      => "$pythonel_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args | grep -v 'Requirement already satisfied'",
         refreshonly => true,
         timeout     => $timeout,
         user        => $owner,
         subscribe   => Exec["create_python_virtualenv_${venv_dir}"],
         environment => $_environment,
         cwd         => $cwd,
-        require     => [File[$venv_dir, $ppyp_helper], Class[$interpreter_class]],
+        require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class]],
       }
 
     }
