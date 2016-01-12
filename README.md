@@ -3,6 +3,8 @@
 - **Enterprise Linux 6**: RHEL6, CentOS6 and clones (not tested)
 - **Enterprise Linux 7**: RHEL7, CentOS7 and clones (not tested)
 
+As of 2011-01-12, the scl support on EL7 has not yet been tested.
+
 # Why another Puppet-Python module?
 
 * Support of **multiple Python interpreters**, including interpreters from **Software Collections** and the  **IUS** - repository.
@@ -19,8 +21,8 @@ The [puppet-python module](https://forge.puppetlabs.com/stankevich/python), alth
 # Overview
 
 Every Python interpreter ist defined within `manifest/interpreter/${interpreter}.pp`. As of now, there are 4 interpreters defined:
-- **system**: The Python 2.6 interpreter of EL6
-- **rh-python27-scl**: The Python 2.7 interpreter of RedHats Software Collections
+- **system**: The Python 2.6 interpreter of EL6 or the Python 2.7 interpreter on EL7
+- **rh-python27-scl**: The Python 2.7 interpreter of RedHats Software Collections.
 - **rh-python34-scl**:The Python 3.4 interpreter of RedHats Software Collections
 - **python35-scl**: The Python 3.5 interpreter from [IUS](http://ius.io)
 
