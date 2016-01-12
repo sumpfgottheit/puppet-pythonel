@@ -1,8 +1,8 @@
 {
   "name": "sumpfgottheit-pythonel",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "sumpfgottheit",
-  "summary": "Configure Python interpreters - including SCLs - and virtualenvs for Enterprise Linux 6 and 7",
+  "summary": "Configure Python interpreters and virtualenvs for Enterprise Linux 6 and 7 including SCLs",
   "license": "MIT",
   "source": "https://github.com/sumpfgottheit/puppet-pythonel",
   "project_page": "https://github.com/sumpfgottheit/puppet-pythonel",
@@ -11,11 +11,22 @@
     {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
   ],
   "operatingsystem_support": [
-	{
-		"operatingsystem":"RedHat",
-			"operatingsystemrelease":[ "6.0", "7.0" ]
-		}
-	],
-  "data_provider": "hiera"
+    {
+      "operatingsystem":"RedHat",
+      "operatingsystemrelease":[ "6", "7" ]
+    },
+    {
+      "operatingsystem":"CentOS",
+      "operatingsystemrelease":[ "6", "7" ]
+    }
+  ],
+  "data_provider": "hiera",
+  "tags": [
+    "python",
+    "pip",
+    "scl",
+    "virtualenv"
+    "ius",
+    ]
 }
 

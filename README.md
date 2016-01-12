@@ -70,7 +70,7 @@ As our systems have no connection to the internet, the handling of YumRepositori
     ################################
 ```
 
-Adapt the files and make sure, that the packages are installed.
+Adapt the files and make sure, that the packages are installed. This means, that it is difficult to use the module "as is" using automatic collection of modules via puppetforge, as you need to adapt this section to your needs. As I have written above, our systems are not connected to the internet, so we are used to it. If anyone has a good idea how to handle this, I am more than happy to implement - or merge - it.
 
 # Configuration
 
