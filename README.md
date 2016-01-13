@@ -38,6 +38,9 @@ the logic using a puppet resource. Drop your requirements file into your applica
 ## pythonel_helper
 The biggest problem defining python environments via puppet ist the lack of information at catalog compile time. Which python version/pip version combination is available and needs which parameters. It's a big mess. By including a python interpreter, the file `/usr/local/bin/pythonel_helper` ist installed. This helper script takes care of all the crazy, local stuff and helps the `Exec` ressources to stay readable. When calling `pytophon::pip`, the helper-script is called on the node and enables the sofware collection if necessary.
 
+
+Every `activate` script of an SCL-virtualenv contains a `source scl_source enable $SCL` which enables the scl when sourcing the active-script.
+
 # Usage
 
 ```puppet

@@ -245,5 +245,11 @@ fi
 #
 EXEC="${COMMAND_PREFIX}${COMMAND} ${ARGS}"
 $EXEC
+
+if [[ $CMD == "virtualenv" ]] && is_abs_command $COMMAND && is_scl_command $COMMAND ; then
+	ACTIVATE="$ARGS/bin/activate"
+	grep -q "source scl_source enable $SCL" $ACTIVATE || sed -i "1i source scl_source enable $SCL" $ACTIVATE
+fi
+
 exit $?
 
