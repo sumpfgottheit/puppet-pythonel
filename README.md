@@ -3,8 +3,6 @@
 - **Enterprise Linux 6**: RHEL6, CentOS6 and clones (not tested)
 - **Enterprise Linux 7**: RHEL7, CentOS7 and clones (not tested)
 
-As of 2011-01-12, the scl support on EL7 has not yet been tested.
-
 # Why another Puppet-Python module?
 
 * Support of **multiple Python interpreters**, including interpreters from **Software Collections** and the  **IUS** - repository.
@@ -73,6 +71,25 @@ As our systems have no connection to the internet, the handling of YumRepositori
 ```
 
 Adapt the files and make sure, that the packages are installed. This means, that it is difficult to use the module "as is" using automatic collection of modules via puppetforge, as you need to adapt this section to your needs. As I have written above, our systems are not connected to the internet, so we are used to it. If anyone has a good idea how to handle this, I am more than happy to implement - or merge - it.
+
+For the [IUS-repositories](http:///ius.io/), you can change the yumrepo/package part like this:
+
+```puppet
+yumrepo { 'ius':
+	name       => 'ius',
+	mirrorlist => 'https://mirrors.iuscommunity.org/mirrorlist?repo=ius-el7&arch=$basearch&protocol=http',
+	...
+	...
+}
+package { $packages: 
+	ensure => $packages_ensure
+}
+```
+
+To install the Software Collections repository, go to https://www.softwarecollections.org/ and follow the instructions. On RHEL machines, you can use `subscription-manager` to enable the repository, if you dont't use puppet.
+
+
+
 
 # Configuration
 
