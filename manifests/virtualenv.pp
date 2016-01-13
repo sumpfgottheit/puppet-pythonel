@@ -75,7 +75,6 @@ define pythonel::virtualenv (
   $requirements_file = false,
   $systempkgs        = false,
   $venv_dir          = $name,
-  $pip_config_file   = undef,
   $owner             = 'root',
   $group             = 'root',
   $mode              = '0755',
@@ -89,10 +88,11 @@ define pythonel::virtualenv (
   if $ensure == 'present' {
     $bindir                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::bindir'] %>")
     $python                     = inline_template("<%= scope['pythonel::interpreter::${interpreter}::python'] %>")
+    $virtualenv                 = inline_template("<%= scope['pythonel::interpreter::${interpreter}::virtualenv'] %>")
     $pip                        = inline_template("<%= scope['pythonel::interpreter::${interpreter}::pip'] %>")
     $interpreter_extra_pip_args = inline_template("<%= scope['pythonel::interpreter::${interpreter}::extra_pip_args'] %>")
     $base_script_dir            = inline_template("<%= scope['pythonel::interpreter::${interpreter}::base_script_dir'] %>")
-    $pythonel_helper                = '/usr/local/bin/pythonel_helper'
+    $pythonel_helper            = '/usr/local/bin/pythonel_helper'
 
     # Ensure that the interpreter is installed before creating the virtal environment -> require this class
     $interpreter_class = "pythonel::interpreter::$interpreter"
@@ -109,35 +109,43 @@ define pythonel::virtualenv (
       default  => ''
     }
 
-    $_environment = $pip_config_file ? {
-      undef   => $environment,
-      default => concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
-    }
-
     $_extra_pip_args = "$interpreter_extra_pip_args $extra_pip_args"
 
+    # set $env_pip_config_file
+    $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
+    $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file")
+    $_pip_config_file = $pip_config_file ? {
+        ''       => $global_pip_config_file,
+        default  => $pip_config_file
+    }
+    $env_pip_config_file = $_pip_config_file ? {
+        ''      => [],
+        default => ["PIP_CONFIG_FILE=$_pip_config_file"]
+    }
+    # /set $env_pip_config_file
+    $_environment = concat($environment, $env_pip_config_file)
+
     exec { "create_python_virtualenv_${venv_dir}":
-      command     => "$pythonel_helper virtualenv $_systempkgs $venv_dir",
-      user        => $owner,
+      command     => "$pythonel_helper $virtualenv $_systempkgs $venv_dir",
       creates     => "${venv_dir}/bin/activate",
-      path        => $path,
-      cwd         => '/tmp',
-      environment => $_environment,
       unless      => "grep '^[\\t ]*VIRTUAL_ENV=[\\\\'\\\"]*${venv_dir}[\\\"\\\\'][\\t ]*$' ${venv_dir}/bin/activate", #Unless activate exists and VIRTUAL_ENV is correct we re-create the virtualenv
-      require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class]],
+      environment => $_environment,
+      cwd         => $cwd,
+      path        => $path,
+      require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class], Anchor[$interpreter]],
+      user        => $owner,
     }
 
     if $requirements_file {
       exec { "python_requirements_install_${requirements}_${venv_dir}":
-        command     => "$pythonel_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args",
-		    onlyif      => "$pythonel_helper pip -v $venv_dir install -r $requirements_file  $_extra_pip_args | grep -v 'Requirement already satisfied'",
-        refreshonly => true,
+        command     => "$pythonel_helper pip -v $venv_dir install -r $requirements_file $_extra_pip_args",
+        onlyif      => "$pythonel_helper pip -v $venv_dir install -r $requirements_file $_extra_pip_args | grep -v 'Requirement already satisfied' | grep -v 'Cleaning up'",
         timeout     => $timeout,
-        user        => $owner,
-        subscribe   => Exec["create_python_virtualenv_${venv_dir}"],
         environment => $_environment,
         cwd         => $cwd,
-        require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class]],
+        path        => $path,
+        require     => [File[$venv_dir, $pythonel_helper], Class[$interpreter_class], Anchor[$interpreter], Exec["create_python_virtualenv_${venv_dir}"]],
+        user        => $owner,
       }
 
     }

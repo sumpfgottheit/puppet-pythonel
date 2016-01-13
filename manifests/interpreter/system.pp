@@ -27,13 +27,17 @@ class pythonel::interpreter::system {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    #realize Package[$packages]              # Packages are defined globally and only realized
-    package { $packages:                   # Define the package ressources here...
-        ensure => $packages_ensure
-    }
+    realize Package[$packages]              # Packages are defined globally and only realized
+    #package { $packages:                   # Define the package ressources here...
+    #    ensure => $packages_ensure
+    #}
     ####################################
     # Packages should now be installed #
     ####################################
+
+    anchor { "$interpreter":
+        require => Package[$packages]
+    }
 
 
     $_pip_config_file = $pip_config_file ? {

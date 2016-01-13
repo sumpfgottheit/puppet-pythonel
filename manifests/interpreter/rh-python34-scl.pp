@@ -28,7 +28,7 @@ class pythonel::interpreter::rh-python34-scl {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    #realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
     package { $packages:
         ensure => $packages_ensure,
     }
@@ -36,6 +36,9 @@ class pythonel::interpreter::rh-python34-scl {
     # Packages should now be installed #
     ####################################
 
+    anchor { "$interpreter":
+        require => Package[$packages]
+    }
 
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,

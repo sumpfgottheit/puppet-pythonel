@@ -19,8 +19,6 @@ class pythonel::interpreter::python35-ius {
     $upgrade_pip            = hiera("pythonel::interpreter::${interpreter}::upgrade_pip", false)
     $upgrade_virtualenv     = hiera("pythonel::interpreter::${interpreter}::upgrade_virtualenv", false)
     $packages_ensure        = hiera("pythonel::interpreter::${interpreter}::packages_ensure", 'present')
-    $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
-    $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 
     ################################
     # YumRepo and package handling #
@@ -34,6 +32,10 @@ class pythonel::interpreter::python35-ius {
     # Packages should now be installed #
     ####################################
 
+    anchor { "$interpreter":
+        require => Package[$packages]
+    }
+
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,
         default  => $pip_config_file
@@ -42,6 +44,7 @@ class pythonel::interpreter::python35-ius {
         ''      => [],
         default => [ "PIP_CONFIG_FILE=$_pip_config_file"]
     }
+
 
     include pythonel::interpreter::prep # Define pythonel_helper
 
@@ -53,6 +56,7 @@ class pythonel::interpreter::python35-ius {
     file { '/usr/local/bin/python35-ius':
         ensure => 'directory'
     }
+
     exec { "install-virtualenv-$interpreter":
         command     => "/usr/local/bin/pythonel_helper $pip install virtualenv $_extra_pip_args",
         environment => $environment,

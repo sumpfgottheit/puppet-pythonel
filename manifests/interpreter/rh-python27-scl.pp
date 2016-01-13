@@ -2,7 +2,7 @@ class pythonel::interpreter::rh-python27-scl {
 
     $interpreter  = 'rh-python27-scl'
     $bindir       = '/opt/rh/python27/root/usr/bin'
-    $packages     = ['python27', ]
+    $packages     = ['python27-python', 'python27-python-devel', 'python27-python-pip', 'python27-python-virtualenv', ]
 
     #
     # Only change if binaries are not called python, pip or virtualenv
@@ -36,13 +36,17 @@ class pythonel::interpreter::rh-python27-scl {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    #realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
     package { $packages:
         ensure => $packages_ensure,
     }
     ####################################
     # Packages should now be installed #
     ####################################
+
+    anchor { "$interpreter":
+        require => Package[$packages]
+    }
 
     if $upgrade_pip {
         exec { "upgrade-pip-$interpreter":

@@ -44,7 +44,6 @@ define pythonel::pip (
   $package           = $name,
   $virtualenv        = undef,
   $interpreter       = undef,
-  $pip_config_file   = undef,
   $environment       = [],
   $path              = [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin' ],
   $cwd               = undef,
@@ -57,15 +56,11 @@ define pythonel::pip (
   $pip                        = inline_template("<%= scope['pythonel::interpreter::${interpreter}::pip'] %>")
   $interpreter_extra_pip_args = inline_template("<%= scope['pythonel::interpreter::${interpreter}::extra_pip_args'] %>")
   $base_script_dir            = inline_template("<%= scope['pythonel::interpreter::${interpreter}::base_script_dir'] %>")
+  $packages                   = inline_template("<%= scope['pythonel::interpreter::${interpreter}::packages'] %>")
   $pythonel_helper            = '/usr/local/bin/pythonel_helper'
 
   # Ensure that the interpreter is installed before creating the virtal environment -> require this class
   $interpreter_class = "pythonel::interpreter::$interpreter"
-
-  $_environment = $pip_config_file ? {
-    undef   => $environment,
-    default => concat($environment, "PIP_CONFIG_FILE=$pip_config_file")
-  }
 
   $_extra_pip_args = $base_script_dir ? {
     ""      => "$interpreter_extra_pip_args $extra_pip_args",
@@ -77,13 +72,27 @@ define pythonel::pip (
     default => "pip -v $virtualenv"   # Just call the pip within the virtualenv. The pythonel_helper takes care of scl
   }
 
+  # set $env_pip_config_file
+  $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
+  $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file")
+  $_pip_config_file = $pip_config_file ? {
+      ''       => $global_pip_config_file,
+      default  => $pip_config_file
+  }
+  $env_pip_config_file = $_pip_config_file ? {
+      ''      => [],
+      default => ["PIP_CONFIG_FILE=$_pip_config_file"]
+  }
+  # /set $env_pip_config_file
+  $_environment = concat($environment, $env_pip_config_file)
+
   exec { "pip_install_${name}_${interpreter}_${virtualenv}":
     command     => "$pythonel_helper $_pip install $package $_extra_pip_args",
     unless      => "$pythonel_helper $_pip install $package $_extra_pip_args | grep 'Requirement already satisfied'",
     path        => $path,
     cwd         => $cwd,
     environment => $_environment,
-    require     => [File[$pythonel_helper], Class[$interpreter_class]],
+    require     => [File[$pythonel_helper], Class[$interpreter_class], Anchor[$interpreter]],
   }
 
 }
