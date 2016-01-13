@@ -1,6 +1,6 @@
 {
   "name": "sumpfgottheit-pythonel",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "author": "sumpfgottheit",
   "summary": "Configure Python interpreters and virtualenvs for Enterprise Linux 6 and 7 including SCLs",
   "license": "MIT",
