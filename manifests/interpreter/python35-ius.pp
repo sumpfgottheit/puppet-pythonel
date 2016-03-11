@@ -9,7 +9,7 @@ class pythonel::interpreter::python35-ius {
     #
     $python          = "$bindir/python3.5"
     $pip             = "$bindir/pip3.5"
-    $virtualenv      = "/usr/local/bin/python35-ius/virtualenv-3.5"
+    $virtualenv      = "/usr/local/bin/python35-ius/virtualenv"
     $extra_pip_args  = ""
     $base_script_dir = '/usr/local/bin/python35-ius'
 
