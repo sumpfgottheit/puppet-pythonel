@@ -1,5 +1,8 @@
 class pythonel::interpreter::rh-python27-scl {
 
+    notify { 'DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::rh_python27_scl': }
+    warning('DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::rh_python27_scl')
+
     $interpreter  = 'rh-python27-scl'
     $bindir       = '/opt/rh/python27/root/usr/bin'
     $packages     = ['python27-python', 'python27-python-devel', 'python27-python-pip', 'python27-python-virtualenv', ]
@@ -36,7 +39,9 @@ class pythonel::interpreter::rh-python27-scl {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+    #
+    # sudo yum install centos-release-scl
+    #
     package { $packages:
         ensure => $packages_ensure,
     }

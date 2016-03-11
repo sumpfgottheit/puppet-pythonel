@@ -16,17 +16,21 @@ The [puppet-python module](https://forge.puppetlabs.com/stankevich/python), alth
 - **YUM Repository Management**: Our servers are not connected to the internet. Therefore we use a mirror of all YUM repositories we need. We define the YUM Repositories - Ressources once and every module, which needs a repository just needs to `realize` it. If a **RubyOnRails** application needs the **RedHatSoftwareCollections** and a **Python** app also needs this specific respository, the definition of `yumrepo`in each manifest will lead to an error. By defining the repositories once and just realizing it, I can work around this problem. Just don't do YUM-repository management!
 - **Software Collections**: The support for SCLs grow steadily within the original repository, but it's not yet there, I think.
 
+# Changes in 0.8.0
+
+The puppet naming conventions need the dashes within the classnames replaced with underscores. Using the old classnames result in a deprecation warning.
+
 # Overview
 
 Every Python interpreter ist defined within `manifest/interpreter/${interpreter}.pp`. As of now, there are 4 interpreters defined:
 - **system**: The Python 2.6 interpreter of EL6 or the Python 2.7 interpreter on EL7
-- **rh-python27-scl**: The Python 2.7 interpreter of RedHats Software Collections.
-- **rh-python34-scl**:The Python 3.4 interpreter of RedHats Software Collections
-- **python35-scl**: The Python 3.5 interpreter from [IUS](http://ius.io)
+- **rh_python27_scl**: The Python 2.7 interpreter of RedHats Software Collections.
+- **rh_python34_scl**:The Python 3.4 interpreter of RedHats Software Collections
+- **python35_ius**: The Python 3.5 interpreter from [IUS](http://ius.io)
 
 To use on of the interpreters, just include it:
 ```puppet
-include pythonel::interpreter::rh-python34-scl
+include pythonel::interpreter::rh_python34_scl
 ```
 
 By using the `include` construct, every interpreter can included by multiple applications without any problems. The interpreter-manifests installs the interpreter using the `package` ressource, but **without defining a yumrepo ressource**. If you define your repository once, you can put the `Yumrepo <|title = redhat-scl-el6 |>` in the interpreter manifest. The interpreters define some variables that are used by `virtualenv` and `pip` to adapt to the calling interpeter.
@@ -44,13 +48,13 @@ Every `activate` script of an SCL-virtualenv contains a `source scl_source enabl
 # Usage
 
 ```puppet
-  # Install the rh-python34-scl interpreter
-  include pythonel::interpreter::rh-python34-scl
+  # Install the rh_python34_scl interpreter
+  include pythonel::interpreter::rh_python34_scl
   
   # Create a virtualenv within /opt/virtualenvs/myapp with the correct interpreter
   # and install the modules from the requirements file
   pythonel::virtualenv { '/opt/virtualenvs/myapp':
-    interpreter => 'rh-python34-scl',
+    interpreter => 'rh_python34_scl',
     requirements_file => '/opt/myapp/requirements.txt',
     systempkgs => true,
   } ->
@@ -59,7 +63,7 @@ Every `activate` script of an SCL-virtualenv contains a `source scl_source enabl
   pythonel::pip { 'myapp-colorama':
     package     => 'colorama',
     virtualenv  => '/opt/virtualenvs/myapp',
-    interpreter => 'rh-python34-scl'
+    interpreter => 'rh_python34_scl'
   }
 ```
 
@@ -105,16 +109,16 @@ $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_conf
 $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 ```
 
-Example: For the python interpreter `rh-python34-scl`, you can set the following configartions via hiera
+Example: For the python interpreter `rh_python34_scl`, you can set the following configartions via hiera
 ```yaml
 # run "pip install --upgrade pip" during installation of the python interpreter
-pythonel::interpreter::rh-python34-scl::upgrade_pip: true/false
+pythonel::interpreter::rh_python34_scl::upgrade_pip: true/false
 # run "pip install --upgrade virtualenv" during installation of the python interpreter
-pythonel::interpreter::rh-python34-scl::upgrade_upgrade_virtualenv: true/false
+pythonel::interpreter::rh_python34_scl::upgrade_upgrade_virtualenv: true/false
 # set package=>ensure to "latest" or "present"
-pythonel::interpreter::rh-python34-scl::package_ensure: present/latest
+pythonel::interpreter::rh_python34_scl::package_ensure: present/latest
 # Set an explicit 'PIP_CONFIG_FILE' for this interpreter
-pythonel::interpreter::rh-python34-scl::pip_config_file: /etc/pip-rh-python34-scl.conf
+pythonel::interpreter::rh_python34_scl::pip_config_file: /etc/pip-rh_python34_scl.conf
 ```
 
 Often, you want to use a `PIP_CONFIG_FILE` for all interpreters on a system, for example to let it point to you internal Pypi-mirror. Use the `pythonel::interpreter::pip_config_file` hiera-variable. An interpreter-specific `PIP_CONFIG_FILE` has precedence over the global file.

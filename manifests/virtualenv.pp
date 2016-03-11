@@ -113,7 +113,7 @@ define pythonel::virtualenv (
 
     # set $env_pip_config_file
     $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
-    $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file")
+    $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
     $_pip_config_file = $pip_config_file ? {
         ''       => $global_pip_config_file,
         default  => $pip_config_file

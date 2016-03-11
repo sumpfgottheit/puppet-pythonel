@@ -26,7 +26,9 @@ class pythonel::interpreter::python35_ius {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    #realize Swrepo::Repo['ius-python-el6']
+    #
+    # sudo yum install https://rhel7.iuscommunity.org/ius-release.rpm
+    #
     package { $packages:
         ensure => $packages_ensure
     }

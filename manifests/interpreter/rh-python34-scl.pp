@@ -1,5 +1,8 @@
 class pythonel::interpreter::rh-python34-scl {
 
+    notify { 'DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::rh_python34_scl': }
+    warning('DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::rh_python34_scl')
+
     $interpreter = 'rh-python34-scl'
     $bindir      = '/opt/rh/rh-python34/root/usr/bin'
     $packages    = ['rh-python34', 'rh-python34-python-devel', 'rh-python34-python-pip', 'rh-python34-python-virtualenv']
@@ -28,7 +31,10 @@ class pythonel::interpreter::rh-python34-scl {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+
+    #
+    # sudo yum install centos-release-scl
+    #
     package { $packages:
         ensure => $packages_ensure,
     }

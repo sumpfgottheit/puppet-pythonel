@@ -36,7 +36,9 @@ class pythonel::interpreter::rh_python27_scl {
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    realize Swrepo::Repo['rhel-server-rhscl-6-rpms']
+    #
+    # sudo yum install centos-release-scl
+    #
     package { $packages:
         ensure => $packages_ensure,
     }

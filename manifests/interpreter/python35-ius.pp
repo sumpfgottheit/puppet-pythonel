@@ -1,5 +1,8 @@
 class pythonel::interpreter::python35-ius {
 
+    notify { 'DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::python35_ius': }
+    warning('DEPRECATION WARNING: pythonel::interpreter classes with dashes are deprecated. Please use pythonel::interpreter::python35_ius')
+
     $interpreter  = 'python35-ius'
     $bindir       = '/usr/bin'
     $packages     = ['python35u', 'python35u-devel', 'python35u-pip']
@@ -19,12 +22,16 @@ class pythonel::interpreter::python35-ius {
     $upgrade_pip            = hiera("pythonel::interpreter::${interpreter}::upgrade_pip", false)
     $upgrade_virtualenv     = hiera("pythonel::interpreter::${interpreter}::upgrade_virtualenv", false)
     $packages_ensure        = hiera("pythonel::interpreter::${interpreter}::packages_ensure", 'present')
+    $pip_config_file        = hiera("pythonel::interpreter::${interpreter}::pip_config_file", '')
+    $global_pip_config_file = hiera("pythonel::interpreter::pip_config_file", '')
 
     ################################
     # YumRepo and package handling #
     # Adapt to your needs          #
     ################################
-    #realize Swrepo::Repo['ius-python-el6']
+    #
+    # sudo yum install https://rhel7.iuscommunity.org/ius-release.rpm
+    #
     package { $packages:
         ensure => $packages_ensure
     }
