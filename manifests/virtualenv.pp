@@ -75,8 +75,6 @@ define pythonel::virtualenv (
   $requirements_file = false,
   $systempkgs        = false,
   $venv_dir          = $name,
-  $owner             = 'root',
-  $group             = 'root',
   $mode              = '0755',
   $environment       = [],
   $path              = [ '/bin', '/usr/bin', '/usr/sbin', '/usr/local/bin' ],
