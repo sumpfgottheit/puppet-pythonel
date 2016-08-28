@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sumpfgottheit/puppet-pythonel.svg?branch=master)](https://travis-ci.org/sumpfgottheit/puppet-pythonel)
+
 # Supported Platforms
 
 - **Enterprise Linux 6**: RHEL6, CentOS6 and clones (not tested)
